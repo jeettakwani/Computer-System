@@ -1,0 +1,60 @@
+#include <stdio.h>
+#include <pthread.h>
+#include <assert.h>
+#include <semaphore.h>
+#include <unistd.h>
+#include <stdlib.h>
+
+sem_t s;
+int chopstick[4] = {0,0,0,0};
+pthread_mutex_t mutex[4];
+
+void *philosopher(int *i)
+{
+    int x;
+    x = *i;
+    sem_wait(&s);
+
+    sleep(random() % 5);
+    pthread_mutex_lock(&mutex[(x+4-1)%4]);
+
+    sleep(random() % 5);
+    pthread_mutex_lock(&mutex[(x+4+1)%4]);
+    printf("Diner %d is eating \n", x);
+
+    sleep(random() % 5);
+    pthread_mutex_unlock(&mutex[ (x+4-1) % 4 ]); // left chopstick released
+    pthread_mutex_unlock(&mutex[ (x+4+1) % 4 ]); // right chopstick released
+    sem_post(&s);
+}
+
+int main(int argc, char *argv[])
+{
+    pthread_t p0, p1, p2, p3;
+    pthread_t threads[4] = {p0, p1, p2, p3};
+
+    printf("Starting Dining Philosophers problem\n");
+
+    int thread;
+    int number_of_philosophers = 4;
+    sem_init(&s,0,3);
+    int j=0;
+    
+     pthread_mutex_init(&mutex[0], NULL);
+     pthread_mutex_init(&mutex[1], NULL);  
+     pthread_mutex_init(&mutex[2], NULL);
+     pthread_mutex_init(&mutex[3], NULL);
+
+     pthread_create(&threads[j], NULL, &philosopher, &j);
+     pthread_join(threads[j],NULL);
+     j++;
+     pthread_create(&threads[j], NULL, &philosopher, &j);
+     pthread_join(threads[j],NULL);
+     j++;
+     pthread_create(&threads[j], NULL, &philosopher, &j);
+     pthread_join(threads[j],NULL);
+     j++;
+     pthread_create(&threads[j], NULL, &philosopher, &j);
+     pthread_join(threads[j],NULL);
+
+}
